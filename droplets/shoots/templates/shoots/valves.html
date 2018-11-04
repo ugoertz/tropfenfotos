@@ -1,0 +1,70 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 20px;">
+    <div class="row">
+      <div class="col">
+        <form method="POST" action="">
+	  {% csrf_token %}
+          <div class="row" style="border-bottom: 1px solid gray; padding-left: 100px; margin-top: 20px; margin-bottom: 50px; padding-bottom: 20px;">
+                <button type="submit" name="shoot" class="btn btn-success" style="margin-left: 10px;">Aufnahme</button>
+          </div>
+          <div class="row">
+          {% for valve in valvelist %}
+            <div class="col">
+                <div class="form-group">
+                    <label>V{{ valve.n }}</label>
+                    {% for vt in valve.rounds %}
+		    <input type="text" class="form-control" name="wait{{ vt.id }}" aria-describedby="emailHelp" placeholder="Wait V{{ valve.n }}" value="{{ vt.wait }}">
+		    <input type="text" class="form-control" name="open{{ vt.id }}" aria-describedby="emailHelp" placeholder="Open V{{ valve.n }}" value="{{ vt.open }}">
+                    {% endfor %}
+                </div>
+                <button type="submit" name="submitV{{ valve.n }}" class="btn btn-info" style="margin-left: 10px;">Test V{{ valve.n }}</button>
+                <button type="submit" name="submitV{{ valve.n }}OC" class="btn btn-info" style="margin-left: 10px;">V{{ valve.n }}</button>
+            </div>
+          {% endfor %}
+          </div>
+
+          <div class="row" style="margin-top: 50px; border-top: 1px solname gray; padding-top: 20px;">
+            <div class="col">
+                <div class="form-group form-check">
+                    <label class="form-check-label" for="camera">Kamera</label>
+		    <input type="text" class="form-control" name="camtime" placeholder="Delay" value="{{ camtime }}">
+                    <button type="submit" name="submitC" style="margin-top: 10px;" class="btn btn-primary">Test</button>
+                    <button type="submit" name="submitCF" style="margin-top: 10px;" class="btn btn-warning">Test + Flash</button>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" {% if flash %}checked{% endif %} name="flash">
+                    <label class="form-check-label" for="flash">Blitz</label>
+		    <input type="text" class="form-control" name="flashdelay" placeholder="Delay" value="{{ flashdelay }}">
+                    <button type="submit" name="submitFlash" style="margin-top: 10px;" class="btn btn-warning">Test</button>
+                </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+      <div class="col">
+        <div id="chatlog">
+	  <h2>Pictures</h2>
+	</div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+var wsocket = new WebSocket('ws://' + window.location.host + '/ws/flashair/');
+wsocket.onmessage = function(e) {
+  var data = JSON.parse(e.data);
+  var message = data['message'];
+  $("#chatlog").append('<div style="padding: 10px;"><img style="width: 500px;" src="/media/' + message + '"></div>');
+};
+</script>
+{% endblock %}
